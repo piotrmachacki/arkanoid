@@ -144,40 +144,37 @@ class Ball extends GameElement {
 		}
 	}
 
-	checkObstacleCollision(obstacle: HTMLElement) {
-		var w = 0.5 * (this.ballElement.offsetWidth + obstacle.offsetWidth);
-		var h = 0.5 * (this.ballElement.offsetHeight + obstacle.offsetHeight);
-		var dx = (this.ballElement.offsetLeft + this.ballElement.offsetWidth/2) - (obstacle.offsetLeft + obstacle.offsetWidth/2);
-		var dy = (this.ballElement.offsetTop + this.ballElement.offsetHeight/2) - (obstacle.offsetTop + obstacle.offsetHeight/2);
+	checkObstacleCollision(obstacle: HTMLElement): boolean {
 
-		if(Math.abs(dx) < w && Math.abs(dy) < h) {
-			var wy = w * dy;
-			var hx = h * dx;
-			if(wy > hx) {
-				if(wy > -hx) {
-					this.collisionSide = Side.Bottom
-				} else {
-					this.collisionSide = Side.Left
-				}
-				return true;
+		let r1 = this.ballElement;
+		let r2 = obstacle;
+
+		let dx = (r1.offsetLeft + r1.offsetWidth / 2) - (r2.offsetLeft + r2.offsetWidth / 2);
+		let dy = (r1.offsetTop + r1.offsetHeight / 2) - (r2.offsetTop + r2.offsetHeight / 2);
+		let width = (r1.offsetWidth + r2.offsetWidth) / 2;
+		let height = (r1.offsetHeight + r2.offsetHeight) / 2;
+		let crossWidth = width * dy;
+		let crossHeight = height * dx;
+		let collision = false;
+		
+		if(Math.abs(dx) < width && Math.abs(dy) < height) {
+			if(crossWidth > crossHeight) {
+				this.collisionSide = (crossWidth > (-crossHeight)) ? Side.Bottom : Side.Left;
+				collision = true;
 			} else {
-				if(wy > -hx) {
-					this.collisionSide = Side.Right
-				} else {
-					this.collisionSide = Side.Top
-				}
-				return true;
+				this.collisionSide = (crossWidth > -(crossHeight)) ? Side.Right : Side.Top;
+				collision = true;
 			}
-		} else {
-			this.collisionSide = Side.None;
-			return false;
 		}
+
+		return collision;
+
 	}
 
     calculateEdgePosition(side: Side, obstacle: HTMLElement) {
     	switch(side) {
 			case Side.Left:
-				this.posX = obstacle.offsetLeft + this.ballElement.offsetWidth;
+				this.posX = obstacle.offsetLeft - this.ballElement.offsetWidth;
 				break;
 			case Side.Right:
 				this.posX = obstacle.offsetLeft + obstacle.offsetWidth;
