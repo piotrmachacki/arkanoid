@@ -77,12 +77,16 @@ class Ball extends GameElement {
 	posY: number;
 	direction: number[] = [1,-1];
 	collisionSide: Side;
+	bricks: Array<HTMLElement> = [];
 
-	constructor(public ballElement: HTMLElement, public paddleElement: HTMLElement, public boardElement: HTMLElement) {
+	constructor(public ballElement: HTMLElement, public paddleElement: HTMLElement, public boardElement: HTMLElement, public brickCollection: HTMLCollection) {
 		super(ballElement, boardElement);
 		this.posX = ballElement.offsetLeft;
 		this.posY = ballElement.offsetTop;
 		this.collisionSide = Side.None;
+		for(let i = 0; i < brickCollection.length; i++) {
+			this.bricks.push(<HTMLElement>brickCollection[i]);
+		}
 	}
 
 	move() {
@@ -95,6 +99,16 @@ class Ball extends GameElement {
 		if(this.checkObstacleCollision(this.paddleElement)) {
 			this.calculateEdgePosition(this.collisionSide, this.paddleElement);
 			this.flipDirection();
+		}
+
+		for(let i = 0; i < this.bricks.length; i++) {
+			let brick = this.bricks[i];
+			if(this.checkObstacleCollision(brick)) {
+				this.calculateEdgePosition(this.collisionSide, brick);
+				this.flipDirection();
+				brick.style.visibility = 'hidden';
+				this.bricks.splice(i, 1);
+			}
 		}
 
 		this.moveTo(this.posX, this.posY);
@@ -195,9 +209,9 @@ class Game {
 	ball: Ball;
 	keyMap: boolean[] = [];
 
-	constructor(public ballElement: HTMLElement, public paddleElement: HTMLElement, public boardElement: HTMLElement) {
-		this.paddle = new Paddle(this.paddleElement, this.boardElement);
-		this.ball = new Ball(this.ballElement, this.paddleElement, this.boardElement);
+	constructor(public ballElement: HTMLElement, public paddleElement: HTMLElement, public boardElement: HTMLElement, public brickCollection: HTMLCollection) {
+		this.paddle = new Paddle(paddleElement, boardElement);
+		this.ball = new Ball(ballElement, paddleElement, boardElement, brickCollection);
 	}
 
 	run() {
@@ -219,7 +233,8 @@ class Game {
 var game = new Game(
 	<HTMLElement>document.getElementById("ball"),
 	<HTMLElement>document.getElementById("paddle"),
-	<HTMLElement>document.getElementById("game-board")
+	<HTMLElement>document.getElementById("game-board"),
+	<HTMLCollection>document.getElementsByClassName("brick")
 );
 
 game.run();

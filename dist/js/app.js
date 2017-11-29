@@ -78,16 +78,21 @@ var Paddle = /** @class */ (function (_super) {
 }(GameElement));
 var Ball = /** @class */ (function (_super) {
     __extends(Ball, _super);
-    function Ball(ballElement, paddleElement, boardElement) {
+    function Ball(ballElement, paddleElement, boardElement, brickCollection) {
         var _this = _super.call(this, ballElement, boardElement) || this;
         _this.ballElement = ballElement;
         _this.paddleElement = paddleElement;
         _this.boardElement = boardElement;
+        _this.brickCollection = brickCollection;
         _this.step = 3;
         _this.direction = [1, -1];
+        _this.bricks = [];
         _this.posX = ballElement.offsetLeft;
         _this.posY = ballElement.offsetTop;
         _this.collisionSide = Side.None;
+        for (var i = 0; i < brickCollection.length; i++) {
+            _this.bricks.push(brickCollection[i]);
+        }
         return _this;
     }
     Ball.prototype.move = function () {
@@ -97,6 +102,15 @@ var Ball = /** @class */ (function (_super) {
         if (this.checkObstacleCollision(this.paddleElement)) {
             this.calculateEdgePosition(this.collisionSide, this.paddleElement);
             this.flipDirection();
+        }
+        for (var i = 0; i < this.bricks.length; i++) {
+            var brick = this.bricks[i];
+            if (this.checkObstacleCollision(brick)) {
+                this.calculateEdgePosition(this.collisionSide, brick);
+                this.flipDirection();
+                brick.style.visibility = 'hidden';
+                this.bricks.splice(i, 1);
+            }
         }
         this.moveTo(this.posX, this.posY);
     };
@@ -188,14 +202,15 @@ var Ball = /** @class */ (function (_super) {
     return Ball;
 }(GameElement));
 var Game = /** @class */ (function () {
-    function Game(ballElement, paddleElement, boardElement) {
+    function Game(ballElement, paddleElement, boardElement, brickCollection) {
         this.ballElement = ballElement;
         this.paddleElement = paddleElement;
         this.boardElement = boardElement;
+        this.brickCollection = brickCollection;
         this.intervalTime = 10;
         this.keyMap = [];
-        this.paddle = new Paddle(this.paddleElement, this.boardElement);
-        this.ball = new Ball(this.ballElement, this.paddleElement, this.boardElement);
+        this.paddle = new Paddle(paddleElement, boardElement);
+        this.ball = new Ball(ballElement, paddleElement, boardElement, brickCollection);
     }
     Game.prototype.run = function () {
         var _this = this;
@@ -211,7 +226,7 @@ var Game = /** @class */ (function () {
     };
     return Game;
 }());
-var game = new Game(document.getElementById("ball"), document.getElementById("paddle"), document.getElementById("game-board"));
+var game = new Game(document.getElementById("ball"), document.getElementById("paddle"), document.getElementById("game-board"), document.getElementsByClassName("brick"));
 game.run();
 
 //# sourceMappingURL=app.js.map

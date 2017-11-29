@@ -99,8 +99,6 @@ body {
   border-radius: 4px;
   display: -webkit-box;
   display: flex;
-  -webkit-box-flex: 1;
-          flex: auto;
   box-shadow: inset 1.25px 1.25px 1px 0px rgba(204, 179, 7, 0.75), inset -1.25px -1.25px 1px 0px rgba(204, 179, 7, 0.75), inset 0px -10px 3.33333px 0px rgba(204, 179, 7, 0.75);
 }
 
