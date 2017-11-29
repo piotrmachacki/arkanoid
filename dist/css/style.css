@@ -1,0 +1,147 @@
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+
+body {
+  line-height: 1;
+}
+
+ol, ul {
+  list-style: none;
+}
+
+blockquote, q {
+  quotes: none;
+}
+
+blockquote:before, blockquote:after {
+  content: '';
+  content: none;
+}
+
+q:before, q:after {
+  content: '';
+  content: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+body {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 1rem;
+  background-color: #45469e;
+}
+
+.game-board-wraper {
+  background-color: #bf008e;
+  width: 600px;
+  height: 500px;
+  margin: auto auto;
+  padding: 30px;
+  border-radius: 30px;
+  box-shadow: inset 0 -6px 8px rgba(137, 0, 109, 0.4), inset 0 -6px 8px 2px rgba(0, 0, 0, 0.4), inset 0 3px 8px 1px rgba(0, 0, 0, 0.4);
+}
+
+.game-board {
+  position: relative;
+  width: 600px;
+  height: 500px;
+  background-color: #450062;
+  margin: auto auto;
+  padding: 1px;
+  display: -webkit-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+}
+
+.paddle {
+  width: 96px;
+  height: 16px;
+  background-color: #5874fe;
+  border-radius: 8px;
+  position: absolute;
+  z-index: 10;
+  left: 252px;
+  bottom: 20px;
+  box-shadow: inset 0 -2px 5px rgba(1, 41, 239, 0.4), inset 0 -2px 4px 2px rgba(0, 0, 0, 0.4), inset 0 1px 4px 1px rgba(0, 0, 0, 0.4);
+}
+
+.ball {
+  width: 24px;
+  height: 24px;
+  background-color: black;
+  border-radius: 100%;
+  position: absolute;
+  z-index: 20;
+  left: 288px;
+  bottom: 37px;
+  background: radial-gradient(circle at 8px 8px, #5cabff, #000);
+}
+
+.brick {
+  width: 58px;
+  height: 19.33333px;
+  background-color: #f8e141;
+  margin: 1px;
+  border-radius: 4px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-flex: 1;
+          flex: auto;
+  box-shadow: inset 1.25px 1.25px 1px 0px rgba(204, 179, 7, 0.75), inset -1.25px -1.25px 1px 0px rgba(204, 179, 7, 0.75), inset 0px -10px 3.33333px 0px rgba(204, 179, 7, 0.75);
+}
+
+.brick.row-1 {
+  background-color: gold;
+  box-shadow: inset 1.20833px 1.20833px 0.96667px 0px rgba(153, 129, 0, 0.75), inset -1.20833px -1.20833px 0.96667px 0px rgba(153, 129, 0, 0.75), inset 0px -9.66667px 3.22222px 0px rgba(153, 129, 0, 0.75);
+}
+
+.brick.row-2 {
+  background-color: darkorange;
+  box-shadow: inset 1.20833px 1.20833px 0.96667px 0px rgba(153, 84, 0, 0.75), inset -1.20833px -1.20833px 0.96667px 0px rgba(153, 84, 0, 0.75), inset 0px -9.66667px 3.22222px 0px rgba(153, 84, 0, 0.75);
+}
+
+.brick.row-3 {
+  background-color: red;
+  box-shadow: inset 1.20833px 1.20833px 0.96667px 0px rgba(153, 0, 0, 0.75), inset -1.20833px -1.20833px 0.96667px 0px rgba(153, 0, 0, 0.75), inset 0px -9.66667px 3.22222px 0px rgba(153, 0, 0, 0.75);
+}
+
+.brick.row-4 {
+  background-color: deeppink;
+  box-shadow: inset 1.20833px 1.20833px 0.96667px 0px rgba(173, 0, 93, 0.75), inset -1.20833px -1.20833px 0.96667px 0px rgba(173, 0, 93, 0.75), inset 0px -9.66667px 3.22222px 0px rgba(173, 0, 93, 0.75);
+}
+
+.brick.row-5 {
+  background-color: mediumvioletred;
+  box-shadow: inset 1.20833px 1.20833px 0.96667px 0px rgba(107, 11, 71, 0.75), inset -1.20833px -1.20833px 0.96667px 0px rgba(107, 11, 71, 0.75), inset 0px -9.66667px 3.22222px 0px rgba(107, 11, 71, 0.75);
+}
+
+.brick.row-6 {
+  background-color: dodgerblue;
+  box-shadow: inset 1.20833px 1.20833px 0.96667px 0px rgba(0, 93, 183, 0.75), inset -1.20833px -1.20833px 0.96667px 0px rgba(0, 93, 183, 0.75), inset 0px -9.66667px 3.22222px 0px rgba(0, 93, 183, 0.75);
+}
+
+.brick.row-7 {
+  background-color: slategray;
+  box-shadow: inset 1.20833px 1.20833px 0.96667px 0px rgba(67, 77, 87, 0.75), inset -1.20833px -1.20833px 0.96667px 0px rgba(67, 77, 87, 0.75), inset 0px -9.66667px 3.22222px 0px rgba(67, 77, 87, 0.75);
+}
+
+.brick.row-8 {
+  background-color: darkslategrey;
+  box-shadow: inset 1.20833px 1.20833px 0.96667px 0px rgba(9, 15, 15, 0.75), inset -1.20833px -1.20833px 0.96667px 0px rgba(9, 15, 15, 0.75), inset 0px -9.66667px 3.22222px 0px rgba(9, 15, 15, 0.75);
+}
+
+/*# sourceMappingURL=style.css.map */

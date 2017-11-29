@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+	<meta charset="UTF-8">
+	<title>Arkanoid</title>
+	<meta name="author" content="Piotr Machacki">
+	<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+	<div class="game-board-wraper">
+		<div id="game-board" class="game-board">
+			<div id="paddle" class="paddle"></div>
+			<div id="ball" class="ball"></div>
+			
+			<div data-row="8" class="brick row-8 col-1"></div>
+			<div data-row="8" class="brick row-8 col-2"></div>
+			<div data-row="8" class="brick row-8 col-3"></div>
+			<div data-row="8" class="brick row-8 col-4"></div>
+			<div data-row="8" class="brick row-8 col-5"></div>
+			<div data-row="8" class="brick row-8 col-6"></div>
+			<div data-row="8" class="brick row-8 col-7"></div>
+			<div data-row="8" class="brick row-8 col-8"></div>
+			<div data-row="8" class="brick row-8 col-9"></div>
+			<div data-row="8" class="brick row-8 col-10"></div>
+
+			<div data-row="7" class="brick row-7 col-1"></div>
+			<div data-row="7" class="brick row-7 col-2"></div>
+			<div data-row="7" class="brick row-7 col-3"></div>
+			<div data-row="7" class="brick row-7 col-4"></div>
+			<div data-row="7" class="brick row-7 col-5"></div>
+			<div data-row="7" class="brick row-7 col-6"></div>
+			<div data-row="7" class="brick row-7 col-7"></div>
+			<div data-row="7" class="brick row-7 col-8"></div>
+			<div data-row="7" class="brick row-7 col-9"></div>
+			<div data-row="7" class="brick row-7 col-10"></div>
+		
+			<div data-row="6" class="brick row-6 col-1"></div>
+			<div data-row="6" class="brick row-6 col-2"></div>
+			<div data-row="6" class="brick row-6 col-3"></div>
+			<div data-row="6" class="brick row-6 col-4"></div>
+			<div data-row="6" class="brick row-6 col-5"></div>
+			<div data-row="6" class="brick row-6 col-6"></div>
+			<div data-row="6" class="brick row-6 col-7"></div>
+			<div data-row="6" class="brick row-6 col-8"></div>
+			<div data-row="6" class="brick row-6 col-9"></div>
+			<div data-row="6" class="brick row-6 col-10"></div>
+		
+			<div data-row="5" class="brick row-5 col-1"></div>
+			<div data-row="5" class="brick row-5 col-2"></div>
+			<div data-row="5" class="brick row-5 col-3"></div>
+			<div data-row="5" class="brick row-5 col-4"></div>
+			<div data-row="5" class="brick row-5 col-5"></div>
+			<div data-row="5" class="brick row-5 col-6"></div>
+			<div data-row="5" class="brick row-5 col-7"></div>
+			<div data-row="5" class="brick row-5 col-8"></div>
+			<div data-row="5" class="brick row-5 col-9"></div>
+			<div data-row="5" class="brick row-5 col-10"></div>
+		
+			<div data-row="4" class="brick row-4 col-1"></div>
+			<div data-row="4" class="brick row-4 col-2"></div>
+			<div data-row="4" class="brick row-4 col-3"></div>
+			<div data-row="4" class="brick row-4 col-4"></div>
+			<div data-row="4" class="brick row-4 col-5"></div>
+			<div data-row="4" class="brick row-4 col-6"></div>
+			<div data-row="4" class="brick row-4 col-7"></div>
+			<div data-row="4" class="brick row-4 col-8"></div>
+			<div data-row="4" class="brick row-4 col-9"></div>
+			<div data-row="4" class="brick row-4 col-10"></div>
+		
+			<div data-row="3" class="brick row-3 col-1"></div>
+			<div data-row="3" class="brick row-3 col-2"></div>
+			<div data-row="3" class="brick row-3 col-3"></div>
+			<div data-row="3" class="brick row-3 col-4"></div>
+			<div data-row="3" class="brick row-3 col-5"></div>
+			<div data-row="3" class="brick row-3 col-6"></div>
+			<div data-row="3" class="brick row-3 col-7"></div>
+			<div data-row="3" class="brick row-3 col-8"></div>
+			<div data-row="3" class="brick row-3 col-9"></div>
+			<div data-row="3" class="brick row-3 col-10"></div>
+		
+			<div data-row="2" class="brick row-2 col-1"></div>
+			<div data-row="2" class="brick row-2 col-2"></div>
+			<div data-row="2" class="brick row-2 col-3"></div>
+			<div data-row="2" class="brick row-2 col-4"></div>
+			<div data-row="2" class="brick row-2 col-5"></div>
+			<div data-row="2" class="brick row-2 col-6"></div>
+			<div data-row="2" class="brick row-2 col-7"></div>
+			<div data-row="2" class="brick row-2 col-8"></div>
+			<div data-row="2" class="brick row-2 col-9"></div>
+			<div data-row="2" class="brick row-2 col-10"></div>
+		
+			<div data-row="1" class="brick row-1 col-1"></div>
+			<div data-row="1" class="brick row-1 col-2"></div>
+			<div data-row="1" class="brick row-1 col-3"></div>
+			<div data-row="1" class="brick row-1 col-4"></div>
+			<div data-row="1" class="brick row-1 col-5"></div>
+			<div data-row="1" class="brick row-1 col-6"></div>
+			<div data-row="1" class="brick row-1 col-7"></div>
+			<div data-row="1" class="brick row-1 col-8"></div>
+			<div data-row="1" class="brick row-1 col-9"></div>
+			<div data-row="1" class="brick row-1 col-10"></div>
+		
+		</div>
+	</div>
+
+	<script src="js/app.js"></script>
+</body>
+</html>

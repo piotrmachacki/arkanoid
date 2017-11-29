@@ -1,0 +1,34 @@
+//============================================
+// base
+//============================================
+
+$font-family-base: 	Verdana, Arial, Helvetica, sans-serif;
+$font-size-base: 	1rem; // '16px'
+$font-size-lg: 		1.25rem;
+$font-size-sm: 		0.875rem;
+$font-size-xs: 		0.75rem;
+
+
+//============================================
+// game
+//============================================
+
+$game-board-width: 			600px;
+$game-board-height: 		500px;
+
+$paddle-width: 				96px;
+$paddle-height: 			16px;
+$paddle-border-radius: 		$paddle-height / 2;
+$paddle-bottom: 			20px;
+$paddle-left: 				($game-board-width - $paddle-width) / 2;
+
+$ball-width: 				24px;
+$ball-height: 				$ball-width;
+$ball-bottom: 				$paddle-bottom + $paddle-height;
+$ball-left: 				($game-board-width - $ball-width) / 2;
+
+$brick-width: 				58px;
+$brick-height: 				$brick-width / 3;
+$brick-background-color: 	#f8e141;
+$brick-rows:				8;
+$brick-colors:				gold, darkorange, red, deeppink, mediumvioletred, dodgerblue, slategray, darkslategrey;

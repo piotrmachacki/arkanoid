@@ -1,0 +1,31 @@
+{
+  "name": "arkanoid",
+  "version": "1.0.0",
+  "description": "Gra Arkanoid",
+  "main": "index.js",
+  "scripts": {
+    "test": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/piotrmachacki/arkanoid.git"
+  },
+  "author": "Piotr Machacki",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/piotrmachacki/arkanoid/issues"
+  },
+  "homepage": "https://github.com/piotrmachacki/arkanoid#readme",
+  "devDependencies": {
+    "browser-sync": "^2.18.13",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^4.0.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^3.1.0",
+    "gulp-sourcemaps": "^2.6.1",
+    "gulp-typescript": "^3.2.3",
+    "gulp-wait": "0.0.2",
+    "gulp-watch": "^4.3.11",
+    "typescript": "^2.6.1"
+  }
+}

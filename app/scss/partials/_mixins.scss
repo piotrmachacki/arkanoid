@@ -1,0 +1,5 @@
+@mixin brick-shadow($color:#f8e141, $brick-height:20px) {
+	box-shadow: inset ($brick-height/16) ($brick-height/16) ($brick-height/20) 0px rgba(darken($color,20% ),0.75),
+				inset (-$brick-height/16) (-$brick-height/16) ($brick-height/20) 0px rgba(darken($color,20% ),0.75),
+				inset 0px (-$brick-height/2) ($brick-height/6) 0px rgba(darken($color,20% ),0.75);
+}
