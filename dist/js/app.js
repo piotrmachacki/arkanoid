@@ -26,43 +26,47 @@ var Direction;
     Direction[Direction["Top"] = -1] = "Top";
     Direction[Direction["Bottom"] = 1] = "Bottom";
 })(Direction || (Direction = {}));
+var OffsetType;
+(function (OffsetType) {
+    OffsetType[OffsetType["X"] = 0] = "X";
+    OffsetType[OffsetType["Y"] = 1] = "Y";
+})(OffsetType || (OffsetType = {}));
 var GameElement = /** @class */ (function () {
     function GameElement(gameElement, boardElement) {
         this.gameElement = gameElement;
         this.boardElement = boardElement;
         this.step = 1;
-        this.directionX = 1;
-        this.directionY = -1;
+        this.direction = [1, -1];
     }
-    GameElement.prototype.calculateX = function (directionX) {
-        if (directionX === void 0) { directionX = Direction.None; }
-        var minLeft = 0;
-        var maxLeft = this.boardElement.offsetWidth - this.gameElement.offsetWidth;
-        if (directionX) {
-            this.directionX = directionX;
+    GameElement.prototype.getElementOffset = function (element, offsetType) {
+        var el = { size: 0, offset: 0 };
+        if (offsetType == OffsetType.X) {
+            el.size = element.offsetWidth;
+            el.offset = element.offsetLeft;
         }
-        else if (this.gameElement.offsetLeft <= minLeft || this.gameElement.offsetLeft >= maxLeft) {
-            this.directionX *= -1;
+        if (offsetType == OffsetType.Y) {
+            el.size = element.offsetHeight;
+            el.offset = element.offsetTop;
         }
-        var left = this.gameElement.offsetLeft + this.step * this.directionX;
-        left = (left > maxLeft) ? maxLeft : left;
-        left = (left < minLeft) ? minLeft : left;
-        return left;
+        ;
+        return el;
     };
-    GameElement.prototype.calculateY = function (directionY) {
-        if (directionY === void 0) { directionY = Direction.None; }
-        var minTop = 0;
-        var maxTop = this.boardElement.offsetHeight - this.gameElement.offsetHeight;
-        if (directionY) {
-            this.directionY = directionY;
+    GameElement.prototype.calculatePosition = function (offsetType, direction) {
+        if (direction === void 0) { direction = Direction.None; }
+        var boardElement = this.getElementOffset(this.boardElement, offsetType);
+        var gameElement = this.getElementOffset(this.gameElement, offsetType);
+        var minPos = 0;
+        var maxPos = boardElement['size'] - gameElement['size'];
+        if (direction) {
+            this.direction[offsetType] = direction;
         }
-        else if (this.gameElement.offsetTop <= minTop || this.gameElement.offsetTop >= maxTop) {
-            this.directionY *= -1;
+        else if (gameElement['offset'] <= minPos || gameElement['offset'] >= maxPos) {
+            this.direction[offsetType] *= -1;
         }
-        var top = this.gameElement.offsetTop + this.step * this.directionY;
-        top = (top > maxTop) ? maxTop : top;
-        top = (top < minTop) ? minTop : top;
-        return top;
+        var pos = gameElement['offset'] + this.step * this.direction[offsetType];
+        pos = (pos > maxPos) ? maxPos : pos;
+        pos = (pos < minPos) ? minPos : pos;
+        return pos;
     };
     GameElement.prototype.moveTo = function (x, y) {
         if (x === void 0) { x = false; }
@@ -85,7 +89,7 @@ var Ball = /** @class */ (function (_super) {
         return _this;
     }
     Ball.prototype.move = function () {
-        this.moveTo(this.calculateX(), this.calculateY());
+        this.moveTo(this.calculatePosition(OffsetType.X), this.calculatePosition(OffsetType.Y));
     };
     return Ball;
 }(GameElement));
@@ -99,10 +103,10 @@ var Paddle = /** @class */ (function (_super) {
         return _this;
     }
     Paddle.prototype.moveLeft = function () {
-        this.moveTo(this.calculateX(Direction.Left));
+        this.moveTo(this.calculatePosition(OffsetType.X, Direction.Left), this.paddleElement.offsetTop);
     };
     Paddle.prototype.moveRight = function () {
-        this.moveTo(this.calculateX(Direction.Right));
+        this.moveTo(this.calculatePosition(OffsetType.X, Direction.Right), this.paddleElement.offsetTop);
     };
     return Paddle;
 }(GameElement));
