@@ -16,7 +16,8 @@ var KeyCodes;
 var GameState;
 (function (GameState) {
     GameState[GameState["GameOver"] = 0] = "GameOver";
-    GameState[GameState["Running"] = 1] = "Running";
+    GameState[GameState["lifeLoss"] = 1] = "lifeLoss";
+    GameState[GameState["Running"] = 2] = "Running";
 })(GameState || (GameState = {}));
 var Direction;
 (function (Direction) {
@@ -31,6 +32,14 @@ var OffsetType;
     OffsetType[OffsetType["X"] = 0] = "X";
     OffsetType[OffsetType["Y"] = 1] = "Y";
 })(OffsetType || (OffsetType = {}));
+var Side;
+(function (Side) {
+    Side[Side["None"] = 0] = "None";
+    Side[Side["Left"] = 1] = "Left";
+    Side[Side["Top"] = 2] = "Top";
+    Side[Side["Right"] = 3] = "Right";
+    Side[Side["Bottom"] = 4] = "Bottom";
+})(Side || (Side = {}));
 var GameElement = /** @class */ (function () {
     function GameElement(gameElement, boardElement) {
         this.gameElement = gameElement;
@@ -86,10 +95,108 @@ var Ball = /** @class */ (function (_super) {
         _this.paddleElement = paddleElement;
         _this.boardElement = boardElement;
         _this.step = 3;
+        _this.posX = ballElement.offsetLeft;
+        _this.posY = ballElement.offsetTop;
+        _this.collisionSide = Side.None;
         return _this;
     }
     Ball.prototype.move = function () {
-        this.moveTo(this.calculatePosition(OffsetType.X), this.calculatePosition(OffsetType.Y));
+        this.posX = this.calculateNewPosition(OffsetType.X);
+        this.posY = this.calculateNewPosition(OffsetType.Y);
+        this.checkGameBoardCollision();
+        if (this.checkObstacleCollision(this.paddleElement)) {
+            this.calculateEdgePosition(this.collisionSide, this.paddleElement);
+            this.flipDirection();
+        }
+        this.moveTo(this.posX, this.posY);
+    };
+    Ball.prototype.calculateNewPosition = function (offsetType) {
+        var pos;
+        if (offsetType == OffsetType.X)
+            pos = this.ballElement.offsetLeft + this.step * this.direction[offsetType];
+        if (offsetType == OffsetType.Y)
+            pos = this.ballElement.offsetTop + this.step * this.direction[offsetType];
+        return pos;
+    };
+    Ball.prototype.checkGameBoardCollision = function () {
+        var minX = 0;
+        var maxX = this.boardElement.offsetWidth - this.ballElement.offsetWidth;
+        var minY = 0;
+        var maxY = this.boardElement.offsetHeight - this.ballElement.offsetHeight;
+        if (this.ballElement.offsetLeft < minX) {
+            this.posX = minX;
+            this.collisionSide = Side.Left;
+            this.flipDirection();
+        }
+        if (this.ballElement.offsetLeft > maxX) {
+            this.posX = maxX;
+            this.collisionSide = Side.Right;
+            this.flipDirection();
+        }
+        if (this.ballElement.offsetTop < minY) {
+            this.posY = minY;
+            this.collisionSide = Side.Top;
+            this.flipDirection();
+        }
+        if (this.ballElement.offsetTop > maxY) {
+            this.posY = maxY;
+            this.collisionSide = Side.Bottom;
+            this.flipDirection();
+        }
+    };
+    Ball.prototype.checkObstacleCollision = function (obstacle) {
+        var w = 0.5 * (this.ballElement.offsetWidth + obstacle.offsetWidth);
+        var h = 0.5 * (this.ballElement.offsetHeight + obstacle.offsetHeight);
+        var dx = (this.ballElement.offsetLeft + this.ballElement.offsetWidth / 2) - (obstacle.offsetLeft + obstacle.offsetWidth / 2);
+        var dy = (this.ballElement.offsetTop + this.ballElement.offsetHeight / 2) - (obstacle.offsetTop + obstacle.offsetHeight / 2);
+        if (Math.abs(dx) < w && Math.abs(dy) < h) {
+            var wy = w * dy;
+            var hx = h * dx;
+            if (wy > hx) {
+                if (wy > -hx) {
+                    this.collisionSide = Side.Bottom;
+                }
+                else {
+                    this.collisionSide = Side.Left;
+                }
+                return true;
+            }
+            else {
+                if (wy > -hx) {
+                    this.collisionSide = Side.Right;
+                }
+                else {
+                    this.collisionSide = Side.Top;
+                }
+                return true;
+            }
+        }
+        else {
+            this.collisionSide = Side.None;
+            return false;
+        }
+    };
+    Ball.prototype.calculateEdgePosition = function (side, obstacle) {
+        switch (side) {
+            case Side.Left:
+                this.posX = obstacle.offsetLeft + this.ballElement.offsetWidth;
+                break;
+            case Side.Right:
+                this.posX = obstacle.offsetLeft + obstacle.offsetWidth;
+                break;
+            case Side.Top:
+                this.posY = obstacle.offsetTop - this.ballElement.offsetHeight;
+                break;
+            case Side.Bottom:
+                this.posY = obstacle.offsetTop + obstacle.offsetHeight;
+                break;
+        }
+    };
+    Ball.prototype.flipDirection = function () {
+        if (this.collisionSide == Side.Left || this.collisionSide == Side.Right)
+            this.direction[OffsetType.X] *= -1;
+        if (this.collisionSide == Side.Top || this.collisionSide == Side.Bottom)
+            this.direction[OffsetType.Y] *= -1;
     };
     return Ball;
 }(GameElement));

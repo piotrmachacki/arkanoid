@@ -5,6 +5,7 @@ enum KeyCodes {
 
 enum GameState {
 	GameOver,
+	lifeLoss,
 	Running
 }
 
@@ -19,6 +20,14 @@ enum Direction {
 enum OffsetType {
 	X,
 	Y
+}
+
+enum Side {
+	None,
+	Left,
+	Top,
+	Right, 
+	Bottom
 }
 
 class GameElement {
@@ -71,14 +80,121 @@ class GameElement {
 class Ball extends GameElement {
 
 	step: number = 3;
+	posX: number;
+	posY: number;
+	collisionSide: Side;
 
 	constructor(public ballElement: HTMLElement, public paddleElement: HTMLElement, public boardElement: HTMLElement) {
 		super(ballElement, boardElement);
+		this.posX = ballElement.offsetLeft;
+		this.posY = ballElement.offsetTop;
+		this.collisionSide = Side.None;
 	}
 
 	move() {
-		this.moveTo(this.calculatePosition(OffsetType.X), this.calculatePosition(OffsetType.Y));
+		
+		this.posX = this.calculateNewPosition(OffsetType.X);
+		this.posY = this.calculateNewPosition(OffsetType.Y);
+
+		this.checkGameBoardCollision();
+
+		if(this.checkObstacleCollision(this.paddleElement)) {
+			this.calculateEdgePosition(this.collisionSide, this.paddleElement);
+			this.flipDirection();
+		}
+
+		this.moveTo(this.posX, this.posY);
 	}
+
+	calculateNewPosition(offsetType: OffsetType) {
+		let pos: number;
+		if(offsetType == OffsetType.X) pos = this.ballElement.offsetLeft + this.step * this.direction[offsetType];
+		if(offsetType == OffsetType.Y) pos = this.ballElement.offsetTop + this.step * this.direction[offsetType];
+		return pos;
+	}
+
+	checkGameBoardCollision() {
+		let minX: number = 0;
+		let maxX: number = this.boardElement.offsetWidth - this.ballElement.offsetWidth;
+		let minY: number = 0;
+		let maxY: number = this.boardElement.offsetHeight - this.ballElement.offsetHeight;
+		if(this.ballElement.offsetLeft < minX) {
+			this.posX = minX;
+			this.collisionSide = Side.Left;
+			this.flipDirection();
+		}
+		if(this.ballElement.offsetLeft > maxX) {
+			this.posX = maxX;
+			this.collisionSide = Side.Right;
+			this.flipDirection();
+		}
+		if(this.ballElement.offsetTop < minY) {
+			this.posY = minY;
+			this.collisionSide = Side.Top;
+			this.flipDirection();
+		}
+		if(this.ballElement.offsetTop > maxY) {
+			this.posY = maxY;
+			this.collisionSide = Side.Bottom;
+			this.flipDirection();
+		}
+	}
+
+	checkObstacleCollision(obstacle: HTMLElement) {
+		var w = 0.5 * (this.ballElement.offsetWidth + obstacle.offsetWidth);
+		var h = 0.5 * (this.ballElement.offsetHeight + obstacle.offsetHeight);
+		var dx = (this.ballElement.offsetLeft + this.ballElement.offsetWidth/2) - (obstacle.offsetLeft + obstacle.offsetWidth/2);
+		var dy = (this.ballElement.offsetTop + this.ballElement.offsetHeight/2) - (obstacle.offsetTop + obstacle.offsetHeight/2);
+
+		if(Math.abs(dx) < w && Math.abs(dy) < h) {
+			var wy = w * dy;
+			var hx = h * dx;
+			if(wy > hx) {
+				if(wy > -hx) {
+					this.collisionSide = Side.Bottom
+				} else {
+					this.collisionSide = Side.Left
+				}
+				return true;
+			} else {
+				if(wy > -hx) {
+					this.collisionSide = Side.Right
+				} else {
+					this.collisionSide = Side.Top
+				}
+				return true;
+			}
+		} else {
+			this.collisionSide = Side.None;
+			return false;
+		}
+	}
+
+    calculateEdgePosition(side: Side, obstacle: HTMLElement) {
+    	switch(side) {
+			case Side.Left:
+				this.posX = obstacle.offsetLeft + this.ballElement.offsetWidth;
+				break;
+			case Side.Right:
+				this.posX = obstacle.offsetLeft + obstacle.offsetWidth;
+				break;
+			case Side.Top:
+				this.posY = obstacle.offsetTop - this.ballElement.offsetHeight;
+				break;
+			case Side.Bottom:
+				this.posY = obstacle.offsetTop + obstacle.offsetHeight;
+				break;
+		}
+    }
+
+    flipDirection() {
+    	if(this.collisionSide == Side.Left || this.collisionSide == Side.Right) this.direction[OffsetType.X] *= -1;
+    	if(this.collisionSide == Side.Top || this.collisionSide == Side.Bottom) this.direction[OffsetType.Y] *= -1;
+    }
+
+    // getPosition() {
+	// 	return {x: this.posX, y: this.posY};
+	// }
 
 }
 
@@ -105,7 +221,7 @@ class Game {
 	intervalTime: number = 10;
 	paddle: Paddle;
 	ball: Ball;
-	keyMap: Array<boolean> = [];
+	keyMap: boolean[] = [];
 
 	constructor(public ballElement: HTMLElement, public paddleElement: HTMLElement, public boardElement: HTMLElement) {
 		this.paddle = new Paddle(this.paddleElement, this.boardElement);
@@ -113,8 +229,8 @@ class Game {
 	}
 
 	run() {
-		document.addEventListener('keyup', e => this.keyMap[e.keyCode] = false );
-		document.addEventListener('keydown', e => this.keyMap[e.keyCode] = true );
+		document.addEventListener('keyup', e => this.keyMap[e.keyCode] = false);
+		document.addEventListener('keydown', e => this.keyMap[e.keyCode] = true);
 
 		setInterval(() => {
 
