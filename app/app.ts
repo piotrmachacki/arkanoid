@@ -9,14 +9,6 @@ enum GameState {
 	Running
 }
 
-enum Direction {
-	None = 0,
-	Left = -1,
-	Right = 1,
-	Top = -1,
-	Bottom = 1
-}
-
 enum OffsetType {
 	X,
 	Y
@@ -33,41 +25,16 @@ enum Side {
 class GameElement {
 
 	step: number = 1;
-	direction: number[] = [1,-1];
+	minX: number;
+	maxX: number;
+	minY: number;
+	maxY: number;
 
 	constructor(public gameElement: HTMLElement, public boardElement: HTMLElement) {
-		
-	}
-
-	getElementOffset(element: HTMLElement, offsetType: OffsetType) {
-		let el = {size:0, offset:0};
-		if(offsetType == OffsetType.X) {
-			el.size = element.offsetWidth;
-			el.offset = element.offsetLeft;
-		}
-		if(offsetType == OffsetType.Y) {
-			el.size = element.offsetHeight;
-			el.offset = element.offsetTop;
-		};
-		return el;
-	}
-
-	calculatePosition(offsetType: OffsetType, direction: Direction = Direction.None) {
-		let boardElement = this.getElementOffset(this.boardElement, offsetType);
-		let gameElement = this.getElementOffset(this.gameElement, offsetType);
-
-		let minPos: number = 0;
-		let maxPos: number = boardElement['size'] - gameElement['size'];
-		if(direction) {
-			this.direction[offsetType] = direction;
-		} else if(gameElement['offset'] <= minPos || gameElement['offset'] >= maxPos) {
-			this.direction[offsetType] *= -1;
-		}
-		let pos: number = gameElement['offset'] + this.step * this.direction[offsetType];
-		pos = (pos>maxPos) ? maxPos : pos;
-		pos = (pos<minPos) ? minPos : pos;
-		return pos;
-
+		this.minX = 0;
+		this.maxX = this.boardElement.offsetWidth - this.gameElement.offsetWidth;
+		this.minY = 0;
+		this.maxY = this.boardElement.offsetHeight - this.gameElement.offsetHeight;
 	}
 
 	moveTo(x: number | boolean = false, y: number | boolean = false) {
@@ -77,11 +44,38 @@ class GameElement {
 
 }
 
+class Paddle extends GameElement {
+
+	step: number = 4;
+	direction: {left: number, right: number} = {left: -1, right: 1};
+
+	constructor(public paddleElement: HTMLElement, public boardElement: HTMLElement) {
+		super(paddleElement, boardElement);
+	}
+
+	calculatePosition(direction: number): number {
+		let left: number = this.gameElement.offsetLeft + this.step * direction;
+		left = (left>this.maxX) ? this.maxX : left;
+		left = (left<this.minX) ? this.minX : left;
+		return left;
+	}
+
+	moveLeft() {
+		this.moveTo(this.calculatePosition(this.direction.left));
+	}
+
+	moveRight() {
+		this.moveTo(this.calculatePosition(this.direction.right));
+	}
+
+}
+
 class Ball extends GameElement {
 
 	step: number = 3;
 	posX: number;
 	posY: number;
+	direction: number[] = [1,-1];
 	collisionSide: Side;
 
 	constructor(public ballElement: HTMLElement, public paddleElement: HTMLElement, public boardElement: HTMLElement) {
@@ -106,35 +100,31 @@ class Ball extends GameElement {
 		this.moveTo(this.posX, this.posY);
 	}
 
-	calculateNewPosition(offsetType: OffsetType) {
+	calculateNewPosition(offsetType: number): number {
 		let pos: number;
 		if(offsetType == OffsetType.X) pos = this.ballElement.offsetLeft + this.step * this.direction[offsetType];
 		if(offsetType == OffsetType.Y) pos = this.ballElement.offsetTop + this.step * this.direction[offsetType];
 		return pos;
 	}
 
-	checkGameBoardCollision() {
-		let minX: number = 0;
-		let maxX: number = this.boardElement.offsetWidth - this.ballElement.offsetWidth;
-		let minY: number = 0;
-		let maxY: number = this.boardElement.offsetHeight - this.ballElement.offsetHeight;
-		if(this.ballElement.offsetLeft < minX) {
-			this.posX = minX;
+	checkGameBoardCollision() {;
+		if(this.ballElement.offsetLeft < this.minX) {
+			this.posX = this.minX;
 			this.collisionSide = Side.Left;
 			this.flipDirection();
 		}
-		if(this.ballElement.offsetLeft > maxX) {
-			this.posX = maxX;
+		if(this.ballElement.offsetLeft > this.maxX) {
+			this.posX = this.maxX;
 			this.collisionSide = Side.Right;
 			this.flipDirection();
 		}
-		if(this.ballElement.offsetTop < minY) {
-			this.posY = minY;
+		if(this.ballElement.offsetTop < this.minY) {
+			this.posY = this.minY;
 			this.collisionSide = Side.Top;
 			this.flipDirection();
 		}
-		if(this.ballElement.offsetTop > maxY) {
-			this.posY = maxY;
+		if(this.ballElement.offsetTop > this.maxY) {
+			this.posY = this.maxY;
 			this.collisionSide = Side.Bottom;
 			this.flipDirection();
 		}
@@ -195,24 +185,6 @@ class Ball extends GameElement {
     // getPosition() {
 	// 	return {x: this.posX, y: this.posY};
 	// }
-
-}
-
-class Paddle extends GameElement {
-
-	step: number = 4;
-
-	constructor(public paddleElement: HTMLElement, public boardElement: HTMLElement) {
-		super(paddleElement, boardElement);
-	}
-
-	moveLeft() {
-		this.moveTo(this.calculatePosition(OffsetType.X, Direction.Left), this.paddleElement.offsetTop);
-	}
-
-	moveRight() {
-		this.moveTo(this.calculatePosition(OffsetType.X, Direction.Right), this.paddleElement.offsetTop);
-	}
 
 }
 
