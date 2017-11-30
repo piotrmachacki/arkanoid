@@ -5,7 +5,7 @@ enum KeyCodes {
 
 enum GameState {
 	GameOver,
-	lifeLoss,
+	LifeLoss,
 	Running
 }
 
@@ -79,11 +79,16 @@ class Paddle extends GameElement {
 class Ball extends GameElement {
 
 	step: number = 3;
+	stepX: number = this.step;
+	stepY: number = this.step;
+	stepMin: number = 1.8;
+	stepChange: number = 0.3;
 	posX: number;
 	posY: number;
 	direction: number[] = [1,-1];
 	collisionSide: Side;
 	bricks: Array<HTMLElement> = [];
+	paddleDirection: number;
 
 	constructor(public ballElement: HTMLElement, public paddleElement: HTMLElement, public boardElement: HTMLElement, public brickCollection: HTMLCollection) {
 		super(ballElement, boardElement);
@@ -103,6 +108,7 @@ class Ball extends GameElement {
 		this.checkGameBoardCollision();
 
 		if(this.checkObstacleCollision(this.paddleElement)) {
+			this.calculateHitAngle();
 			this.calculateEdgePosition(this.collisionSide, this.paddleElement);
 			this.flipDirection();
 		}
@@ -120,10 +126,28 @@ class Ball extends GameElement {
 		this.moveTo(this.posX, this.posY);
 	}
 
+	calculateHitAngle() {
+		let ballX: number = this.direction[OffsetType.X];
+		let paddleX: number = this.paddleDirection;
+		if(paddleX != 0) {
+			if(ballX == paddleX) {
+				if(this.stepY > this.stepMin) {
+					this.stepX += this.stepChange;
+					this.stepY -= this.stepChange;
+				}
+			} else {
+				if(this.stepX > this.stepMin) {
+					this.stepX -= this.stepChange;
+					this.stepY += this.stepChange;
+				}
+			}
+		}
+	}
+
 	calculateNewPosition(offsetType: number): number {
 		let pos: number;
-		if(offsetType == OffsetType.X) pos = this.ballElement.offsetLeft + this.step * this.direction[offsetType];
-		if(offsetType == OffsetType.Y) pos = this.ballElement.offsetTop + this.step * this.direction[offsetType];
+		if(offsetType == OffsetType.X) pos = this.ballElement.offsetLeft + this.stepX * this.direction[offsetType];
+		if(offsetType == OffsetType.Y) pos = this.ballElement.offsetTop + this.stepY * this.direction[offsetType];
 		return pos;
 	}
 
@@ -195,12 +219,17 @@ class Ball extends GameElement {
     }
 
     flipDirection() {
-    	if(this.collisionSide == Side.Left || this.collisionSide == Side.Right) this.direction[OffsetType.X] *= -1;
-    	if(this.collisionSide == Side.Top || this.collisionSide == Side.Bottom) this.direction[OffsetType.Y] *= -1;
-    }
+		if(this.collisionSide == Side.Left || this.collisionSide == Side.Right) this.direction[OffsetType.X] *= -1;
+		if(this.collisionSide == Side.Top || this.collisionSide == Side.Bottom) this.direction[OffsetType.Y] *= -1;
+	}
 
     getPosition() {
 		return {x: this.posX, y: this.posY};
+	}
+
+	StartStep() {
+		this.stepX = this.step;
+		this.stepY = this.step;
 	}
 
 }
@@ -214,22 +243,47 @@ class Game {
 	ballPosition: any;
 	gameInterval: any;
 	boardBottomPosition: number;
-	life = 3;
+	life:number = 3;
+	messageBox: HTMLElement;
+	lifeLoss: HTMLElement;
 
 	constructor(public ballElement: HTMLElement, public paddleElement: HTMLElement, public boardElement: HTMLElement, public brickCollection: HTMLCollection) {
 		this.paddle = new Paddle(paddleElement, boardElement);
 		this.ball = new Ball(ballElement, paddleElement, boardElement, brickCollection);
 		this.boardBottomPosition = boardElement.offsetHeight - ballElement.offsetHeight;
+		document.addEventListener('keyup', e => this.keyMap[e.keyCode] = false);
+		document.addEventListener('keydown', e => this.keyMap[e.keyCode] = true);
+		this.messageBox = <HTMLElement>document.getElementById('message-box');
+		this.lifeLoss = <HTMLElement>document.querySelector('.life-loss');
+		this.displayMessage();
+	}
+
+	start() {
+		setTimeout(() => {
+			this.hideMessage();
+			var self = this;
+			var startGame = function(e: any) {
+				if(e.keyCode === KeyCodes.LEFT || e.keyCode === KeyCodes.RIGHT) {
+					self.run();
+					document.removeEventListener('keydown', startGame);
+				}
+			}
+			document.addEventListener('keydown', startGame);
+		}, 3000);
 	}
 
 	run() {
-		document.addEventListener('keyup', e => this.keyMap[e.keyCode] = false);
-		document.addEventListener('keydown', e => this.keyMap[e.keyCode] = true);
-
 		this.gameInterval = setInterval(() => {
 
-			if(this.keyMap[KeyCodes.LEFT]) this.paddle.moveLeft();
-			if(this.keyMap[KeyCodes.RIGHT]) this.paddle.moveRight();
+			this.ball.paddleDirection = 0;
+			if(this.keyMap[KeyCodes.LEFT]) {
+				this.paddle.moveLeft();
+				this.ball.paddleDirection = this.paddle.direction.left;
+			}
+			if(this.keyMap[KeyCodes.RIGHT]) {
+				this.paddle.moveRight();
+				this.ball.paddleDirection = this.paddle.direction.right;
+			}
 
 			this.ball.move();
 			this.ballPosition = this.ball.getPosition();
@@ -238,14 +292,33 @@ class Game {
 		}, this.intervalTime);
 	}
 
+	displayMessage() {
+		this.lifeLoss.textContent = `${this.life}`;
+		this.messageBox.classList.add('show');
+	}
+
+	hideMessage() {
+		this.messageBox.classList.remove('show');
+	}
+
 	checkLifeLoss() {
 		if(this.ballPosition.y == this.boardBottomPosition) {
-			clearInterval(this.gameInterval);
 			this.life--;
-			document.addEventListener('keydown', startGame);
-			this.ball.StartPosition();
-			this.paddle.StartPosition();
+			this.retryGame();
 		}
+	}
+
+	retryGame() {
+		clearInterval(this.gameInterval);
+		this.ball.StartPosition();
+		this.ball.StartStep();
+		this.paddle.StartPosition();
+		this.displayMessage();
+		(this.life > 0) ? this.start() : this.endGame();
+	}
+
+	endGame() {
+		this.messageBox.querySelector('.message').innerHTML += "<br>Koniec gry"; 
 	}
 
 }
@@ -257,11 +330,4 @@ var game = new Game(
 	<HTMLCollection>document.getElementsByClassName("brick")
 );
 
-var startGame = function(e: any) {
-	if(e.keyCode === KeyCodes.LEFT || e.keyCode === KeyCodes.RIGHT) {
-		game.run();
-		document.removeEventListener('keydown', startGame);
-	}
-}
-
-document.addEventListener('keydown', startGame);
+game.start();

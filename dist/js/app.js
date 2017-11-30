@@ -16,7 +16,7 @@ var KeyCodes;
 var GameState;
 (function (GameState) {
     GameState[GameState["GameOver"] = 0] = "GameOver";
-    GameState[GameState["lifeLoss"] = 1] = "lifeLoss";
+    GameState[GameState["LifeLoss"] = 1] = "LifeLoss";
     GameState[GameState["Running"] = 2] = "Running";
 })(GameState || (GameState = {}));
 var OffsetType;
@@ -89,6 +89,10 @@ var Ball = /** @class */ (function (_super) {
         _this.boardElement = boardElement;
         _this.brickCollection = brickCollection;
         _this.step = 3;
+        _this.stepX = _this.step;
+        _this.stepY = _this.step;
+        _this.stepMin = 1.8;
+        _this.stepChange = 0.3;
         _this.direction = [1, -1];
         _this.bricks = [];
         _this.posX = ballElement.offsetLeft;
@@ -104,6 +108,7 @@ var Ball = /** @class */ (function (_super) {
         this.posY = this.calculateNewPosition(OffsetType.Y);
         this.checkGameBoardCollision();
         if (this.checkObstacleCollision(this.paddleElement)) {
+            this.calculateHitAngle();
             this.calculateEdgePosition(this.collisionSide, this.paddleElement);
             this.flipDirection();
         }
@@ -118,12 +123,30 @@ var Ball = /** @class */ (function (_super) {
         }
         this.moveTo(this.posX, this.posY);
     };
+    Ball.prototype.calculateHitAngle = function () {
+        var ballX = this.direction[OffsetType.X];
+        var paddleX = this.paddleDirection;
+        if (paddleX != 0) {
+            if (ballX == paddleX) {
+                if (this.stepY > this.stepMin) {
+                    this.stepX += this.stepChange;
+                    this.stepY -= this.stepChange;
+                }
+            }
+            else {
+                if (this.stepX > this.stepMin) {
+                    this.stepX -= this.stepChange;
+                    this.stepY += this.stepChange;
+                }
+            }
+        }
+    };
     Ball.prototype.calculateNewPosition = function (offsetType) {
         var pos;
         if (offsetType == OffsetType.X)
-            pos = this.ballElement.offsetLeft + this.step * this.direction[offsetType];
+            pos = this.ballElement.offsetLeft + this.stepX * this.direction[offsetType];
         if (offsetType == OffsetType.Y)
-            pos = this.ballElement.offsetTop + this.step * this.direction[offsetType];
+            pos = this.ballElement.offsetTop + this.stepY * this.direction[offsetType];
         return pos;
     };
     Ball.prototype.checkGameBoardCollision = function () {
@@ -196,10 +219,15 @@ var Ball = /** @class */ (function (_super) {
     Ball.prototype.getPosition = function () {
         return { x: this.posX, y: this.posY };
     };
+    Ball.prototype.StartStep = function () {
+        this.stepX = this.step;
+        this.stepY = this.step;
+    };
     return Ball;
 }(GameElement));
 var Game = /** @class */ (function () {
     function Game(ballElement, paddleElement, boardElement, brickCollection) {
+        var _this = this;
         this.ballElement = ballElement;
         this.paddleElement = paddleElement;
         this.boardElement = boardElement;
@@ -210,39 +238,70 @@ var Game = /** @class */ (function () {
         this.paddle = new Paddle(paddleElement, boardElement);
         this.ball = new Ball(ballElement, paddleElement, boardElement, brickCollection);
         this.boardBottomPosition = boardElement.offsetHeight - ballElement.offsetHeight;
-    }
-    Game.prototype.run = function () {
-        var _this = this;
         document.addEventListener('keyup', function (e) { return _this.keyMap[e.keyCode] = false; });
         document.addEventListener('keydown', function (e) { return _this.keyMap[e.keyCode] = true; });
+        this.messageBox = document.getElementById('message-box');
+        this.lifeLoss = document.querySelector('.life-loss');
+        this.displayMessage();
+    }
+    Game.prototype.start = function () {
+        var _this = this;
+        setTimeout(function () {
+            _this.hideMessage();
+            var self = _this;
+            var startGame = function (e) {
+                if (e.keyCode === KeyCodes.LEFT || e.keyCode === KeyCodes.RIGHT) {
+                    self.run();
+                    document.removeEventListener('keydown', startGame);
+                }
+            };
+            document.addEventListener('keydown', startGame);
+        }, 3000);
+    };
+    Game.prototype.run = function () {
+        var _this = this;
         this.gameInterval = setInterval(function () {
-            if (_this.keyMap[KeyCodes.LEFT])
+            _this.ball.paddleDirection = 0;
+            if (_this.keyMap[KeyCodes.LEFT]) {
                 _this.paddle.moveLeft();
-            if (_this.keyMap[KeyCodes.RIGHT])
+                _this.ball.paddleDirection = _this.paddle.direction.left;
+            }
+            if (_this.keyMap[KeyCodes.RIGHT]) {
                 _this.paddle.moveRight();
+                _this.ball.paddleDirection = _this.paddle.direction.right;
+            }
             _this.ball.move();
             _this.ballPosition = _this.ball.getPosition();
             _this.checkLifeLoss();
         }, this.intervalTime);
     };
+    Game.prototype.displayMessage = function () {
+        this.lifeLoss.textContent = "" + this.life;
+        this.messageBox.classList.add('show');
+    };
+    Game.prototype.hideMessage = function () {
+        this.messageBox.classList.remove('show');
+    };
     Game.prototype.checkLifeLoss = function () {
         if (this.ballPosition.y == this.boardBottomPosition) {
-            clearInterval(this.gameInterval);
             this.life--;
-            document.addEventListener('keydown', startGame);
-            this.ball.StartPosition();
-            this.paddle.StartPosition();
+            this.retryGame();
         }
+    };
+    Game.prototype.retryGame = function () {
+        clearInterval(this.gameInterval);
+        this.ball.StartPosition();
+        this.ball.StartStep();
+        this.paddle.StartPosition();
+        this.displayMessage();
+        (this.life > 0) ? this.start() : this.endGame();
+    };
+    Game.prototype.endGame = function () {
+        this.messageBox.querySelector('.message').innerHTML += "<br>Koniec gry";
     };
     return Game;
 }());
 var game = new Game(document.getElementById("ball"), document.getElementById("paddle"), document.getElementById("game-board"), document.getElementsByClassName("brick"));
-var startGame = function (e) {
-    if (e.keyCode === KeyCodes.LEFT || e.keyCode === KeyCodes.RIGHT) {
-        game.run();
-        document.removeEventListener('keydown', startGame);
-    }
-};
-document.addEventListener('keydown', startGame);
+game.start();
 
 //# sourceMappingURL=app.js.map
