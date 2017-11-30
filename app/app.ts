@@ -29,17 +29,23 @@ class GameElement {
 	maxX: number;
 	minY: number;
 	maxY: number;
+	startPosition: {x: number, y: number};
 
 	constructor(public gameElement: HTMLElement, public boardElement: HTMLElement) {
 		this.minX = 0;
-		this.maxX = this.boardElement.offsetWidth - this.gameElement.offsetWidth;
+		this.maxX = boardElement.offsetWidth - gameElement.offsetWidth;
 		this.minY = 0;
-		this.maxY = this.boardElement.offsetHeight - this.gameElement.offsetHeight;
+		this.maxY = boardElement.offsetHeight - gameElement.offsetHeight;
+		this.startPosition = {x: gameElement.offsetLeft, y: gameElement.offsetTop};
 	}
 
 	moveTo(x: number | boolean = false, y: number | boolean = false) {
 		if(x !== false) this.gameElement.style.left = x + 'px';
 		if(y !== false) this.gameElement.style.top = y + 'px';
+	}
+
+	StartPosition() {
+		this.moveTo(this.startPosition.x, this.startPosition.y);
 	}
 
 }
@@ -193,9 +199,9 @@ class Ball extends GameElement {
     	if(this.collisionSide == Side.Top || this.collisionSide == Side.Bottom) this.direction[OffsetType.Y] *= -1;
     }
 
-    // getPosition() {
-	// 	return {x: this.posX, y: this.posY};
-	// }
+    getPosition() {
+		return {x: this.posX, y: this.posY};
+	}
 
 }
 
@@ -205,24 +211,41 @@ class Game {
 	paddle: Paddle;
 	ball: Ball;
 	keyMap: boolean[] = [];
+	ballPosition: any;
+	gameInterval: any;
+	boardBottomPosition: number;
+	life = 3;
 
 	constructor(public ballElement: HTMLElement, public paddleElement: HTMLElement, public boardElement: HTMLElement, public brickCollection: HTMLCollection) {
 		this.paddle = new Paddle(paddleElement, boardElement);
 		this.ball = new Ball(ballElement, paddleElement, boardElement, brickCollection);
+		this.boardBottomPosition = boardElement.offsetHeight - ballElement.offsetHeight;
 	}
 
 	run() {
 		document.addEventListener('keyup', e => this.keyMap[e.keyCode] = false);
 		document.addEventListener('keydown', e => this.keyMap[e.keyCode] = true);
 
-		setInterval(() => {
+		this.gameInterval = setInterval(() => {
 
 			if(this.keyMap[KeyCodes.LEFT]) this.paddle.moveLeft();
 			if(this.keyMap[KeyCodes.RIGHT]) this.paddle.moveRight();
 
 			this.ball.move();
+			this.ballPosition = this.ball.getPosition();
+			this.checkLifeLoss();
 
 		}, this.intervalTime);
+	}
+
+	checkLifeLoss() {
+		if(this.ballPosition.y == this.boardBottomPosition) {
+			clearInterval(this.gameInterval);
+			this.life--;
+			document.addEventListener('keydown', startGame);
+			this.ball.StartPosition();
+			this.paddle.StartPosition();
+		}
 	}
 
 }
@@ -234,4 +257,11 @@ var game = new Game(
 	<HTMLCollection>document.getElementsByClassName("brick")
 );
 
-game.run();
+var startGame = function(e: any) {
+	if(e.keyCode === KeyCodes.LEFT || e.keyCode === KeyCodes.RIGHT) {
+		game.run();
+		document.removeEventListener('keydown', startGame);
+	}
+}
+
+document.addEventListener('keydown', startGame);

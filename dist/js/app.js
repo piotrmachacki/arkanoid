@@ -38,9 +38,10 @@ var GameElement = /** @class */ (function () {
         this.boardElement = boardElement;
         this.step = 1;
         this.minX = 0;
-        this.maxX = this.boardElement.offsetWidth - this.gameElement.offsetWidth;
+        this.maxX = boardElement.offsetWidth - gameElement.offsetWidth;
         this.minY = 0;
-        this.maxY = this.boardElement.offsetHeight - this.gameElement.offsetHeight;
+        this.maxY = boardElement.offsetHeight - gameElement.offsetHeight;
+        this.startPosition = { x: gameElement.offsetLeft, y: gameElement.offsetTop };
     }
     GameElement.prototype.moveTo = function (x, y) {
         if (x === void 0) { x = false; }
@@ -49,6 +50,9 @@ var GameElement = /** @class */ (function () {
             this.gameElement.style.left = x + 'px';
         if (y !== false)
             this.gameElement.style.top = y + 'px';
+    };
+    GameElement.prototype.StartPosition = function () {
+        this.moveTo(this.startPosition.x, this.startPosition.y);
     };
     return GameElement;
 }());
@@ -189,6 +193,9 @@ var Ball = /** @class */ (function (_super) {
         if (this.collisionSide == Side.Top || this.collisionSide == Side.Bottom)
             this.direction[OffsetType.Y] *= -1;
     };
+    Ball.prototype.getPosition = function () {
+        return { x: this.posX, y: this.posY };
+    };
     return Ball;
 }(GameElement));
 var Game = /** @class */ (function () {
@@ -199,24 +206,43 @@ var Game = /** @class */ (function () {
         this.brickCollection = brickCollection;
         this.intervalTime = 10;
         this.keyMap = [];
+        this.life = 3;
         this.paddle = new Paddle(paddleElement, boardElement);
         this.ball = new Ball(ballElement, paddleElement, boardElement, brickCollection);
+        this.boardBottomPosition = boardElement.offsetHeight - ballElement.offsetHeight;
     }
     Game.prototype.run = function () {
         var _this = this;
         document.addEventListener('keyup', function (e) { return _this.keyMap[e.keyCode] = false; });
         document.addEventListener('keydown', function (e) { return _this.keyMap[e.keyCode] = true; });
-        setInterval(function () {
+        this.gameInterval = setInterval(function () {
             if (_this.keyMap[KeyCodes.LEFT])
                 _this.paddle.moveLeft();
             if (_this.keyMap[KeyCodes.RIGHT])
                 _this.paddle.moveRight();
             _this.ball.move();
+            _this.ballPosition = _this.ball.getPosition();
+            _this.checkLifeLoss();
         }, this.intervalTime);
+    };
+    Game.prototype.checkLifeLoss = function () {
+        if (this.ballPosition.y == this.boardBottomPosition) {
+            clearInterval(this.gameInterval);
+            this.life--;
+            document.addEventListener('keydown', startGame);
+            this.ball.StartPosition();
+            this.paddle.StartPosition();
+        }
     };
     return Game;
 }());
 var game = new Game(document.getElementById("ball"), document.getElementById("paddle"), document.getElementById("game-board"), document.getElementsByClassName("brick"));
-game.run();
+var startGame = function (e) {
+    if (e.keyCode === KeyCodes.LEFT || e.keyCode === KeyCodes.RIGHT) {
+        game.run();
+        document.removeEventListener('keydown', startGame);
+    }
+};
+document.addEventListener('keydown', startGame);
 
 //# sourceMappingURL=app.js.map
