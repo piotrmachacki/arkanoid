@@ -126,6 +126,10 @@ class Ball extends GameElement {
 		this.moveTo(this.posX, this.posY);
 	}
 
+	checkWin() {
+		return this.bricks.length ? false : true;
+	}
+
 	calculateHitAngle() {
 		let ballX: number = this.direction[OffsetType.X];
 		let paddleX: number = this.paddleDirection;
@@ -286,6 +290,7 @@ class Game {
 			}
 
 			this.ball.move();
+			this.checkWinGame();
 			this.ballPosition = this.ball.getPosition();
 			this.checkLifeLoss();
 
@@ -314,11 +319,19 @@ class Game {
 		this.ball.StartStep();
 		this.paddle.StartPosition();
 		this.displayMessage();
-		(this.life > 0) ? this.start() : this.endGame();
+		(this.life > 0) ? this.start() : this.endGame('Koniec gry');
 	}
 
-	endGame() {
-		this.messageBox.querySelector('.message').innerHTML += "<br>Koniec gry"; 
+	endGame(message: string) {
+		this.messageBox.querySelector('.message').innerHTML += `<br>${message}`;
+	}
+
+	checkWinGame() {
+		if(this.ball.checkWin()) {
+			clearInterval(this.gameInterval);
+			this.endGame('Wygrałeś');
+			this.displayMessage();
+		}
 	}
 
 }

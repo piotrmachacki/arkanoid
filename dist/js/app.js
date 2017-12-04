@@ -123,6 +123,9 @@ var Ball = /** @class */ (function (_super) {
         }
         this.moveTo(this.posX, this.posY);
     };
+    Ball.prototype.checkWin = function () {
+        return this.bricks.length ? false : true;
+    };
     Ball.prototype.calculateHitAngle = function () {
         var ballX = this.direction[OffsetType.X];
         var paddleX = this.paddleDirection;
@@ -271,6 +274,7 @@ var Game = /** @class */ (function () {
                 _this.ball.paddleDirection = _this.paddle.direction.right;
             }
             _this.ball.move();
+            _this.checkWinGame();
             _this.ballPosition = _this.ball.getPosition();
             _this.checkLifeLoss();
         }, this.intervalTime);
@@ -294,10 +298,17 @@ var Game = /** @class */ (function () {
         this.ball.StartStep();
         this.paddle.StartPosition();
         this.displayMessage();
-        (this.life > 0) ? this.start() : this.endGame();
+        (this.life > 0) ? this.start() : this.endGame('Koniec gry');
     };
-    Game.prototype.endGame = function () {
-        this.messageBox.querySelector('.message').innerHTML += "<br>Koniec gry";
+    Game.prototype.endGame = function (message) {
+        this.messageBox.querySelector('.message').innerHTML += "<br>" + message;
+    };
+    Game.prototype.checkWinGame = function () {
+        if (this.ball.checkWin()) {
+            clearInterval(this.gameInterval);
+            this.endGame('Wygrałeś');
+            this.displayMessage();
+        }
     };
     return Game;
 }());
