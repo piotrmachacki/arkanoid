@@ -112,11 +112,14 @@ var Ball = /** @class */ (function (_super) {
             this.calculateEdgePosition(this.collisionSide, this.paddleElement);
             this.flipDirection();
         }
+        var collisionSide = Side.None;
         for (var i = 0; i < this.bricks.length; i++) {
             var brick = this.bricks[i];
             if (this.checkObstacleCollision(brick)) {
                 this.calculateEdgePosition(this.collisionSide, brick);
-                this.flipDirection();
+                if (collisionSide != this.collisionSide)
+                    this.flipDirection();
+                collisionSide = this.collisionSide;
                 brick.style.visibility = 'hidden';
                 this.bricks.splice(i, 1);
             }

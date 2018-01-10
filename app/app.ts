@@ -113,11 +113,13 @@ class Ball extends GameElement {
 			this.flipDirection();
 		}
 
+		let collisionSide = Side.None;
 		for(let i = 0; i < this.bricks.length; i++) {
 			let brick = this.bricks[i];
 			if(this.checkObstacleCollision(brick)) {
 				this.calculateEdgePosition(this.collisionSide, brick);
-				this.flipDirection();
+				if(collisionSide != this.collisionSide) this.flipDirection();
+				collisionSide = this.collisionSide;
 				brick.style.visibility = 'hidden';
 				this.bricks.splice(i, 1);
 			}
